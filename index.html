@@ -21,7 +21,7 @@
       text-align: center;
     }
 
-    input[type="text"] {
+    input[type="text"], input[type="date"], input[type="time"] {
       padding: 5px;
       margin: 5px;
     }
@@ -84,6 +84,8 @@
     <input type="text" id="channelFilter" placeholder="Filtrar por Canal">
     <input type="text" id="titleFilter" placeholder="Filtrar por Título">
     <input type="text" id="descriptionFilter" placeholder="Filtrar por Descripción">
+    <input type="date" id="dateFilter" placeholder="Filtrar por Fecha">
+    <input type="time" id="startHourFilter" placeholder="Filtrar por Hora de Inicio">
     <br><br><button onclick="fetchXML()">Recargar EPG dobleM</button><br>
     <br><label for="myfile">Usar otro xml:</label>
     <input accept=".xml" type="file" id="fileInput">
@@ -168,9 +170,6 @@
     // Correct XMLTV time formatting into 'dd/mm/yyyy hh:mm'
     function formatXMLTVTime(time) {
       if (!time) return '';
-      const year = time.substring(0, 4);
-      const month = time.substring(4, 6);
-      const day = time.substring(6, 8);
       const hour = time.substring(8, 10);
       const minute = time.substring(10, 12);
 
@@ -182,13 +181,20 @@
         channel: document.getElementById('channelFilter').value.toLowerCase(),
         title: document.getElementById('titleFilter').value.toLowerCase(),
         description: document.getElementById('descriptionFilter').value.toLowerCase(),
+        date: document.getElementById('dateFilter').value,
+        startHour: document.getElementById('startHourFilter').value,
       };
 
-      const filteredData = epgData.filter(item =>
-        (!filters.channel || item.channel.toLowerCase().includes(filters.channel)) &&
-        (!filters.title || item.title.toLowerCase().includes(filters.title)) &&
-        (!filters.description || item.description.toLowerCase().includes(filters.description))
-      );
+      const filteredData = epgData.filter(item => {
+        const itemDate = item.date.split('/').reverse().join('-'); // Convert to 'yyyy-mm-dd' format for comparison
+        const itemStart = item.start;
+
+        return (!filters.channel || item.channel.toLowerCase().includes(filters.channel)) &&
+               (!filters.title || item.title.toLowerCase().includes(filters.title)) &&
+               (!filters.description || item.description.toLowerCase().includes(filters.description)) &&
+               (!filters.date || itemDate >= filters.date) &&
+               (!filters.startHour || (itemDate === filters.date && itemStart >= filters.startHour));
+      });
 
       const startIndex = currentPage * 100;
       const paginatedData = filteredData.slice(startIndex, startIndex + 100);
@@ -208,8 +214,6 @@
             <br>
             <span style="float:left" class="description">${item.description}</span>
           </td>
-          
-
         `;
         tableBody.appendChild(row);
       });
@@ -236,6 +240,8 @@
     document.getElementById('channelFilter').addEventListener('input', renderTable);
     document.getElementById('titleFilter').addEventListener('input', renderTable);
     document.getElementById('descriptionFilter').addEventListener('input', renderTable);
+    document.getElementById('dateFilter').addEventListener('input', renderTable);
+    document.getElementById('startHourFilter').addEventListener('input', renderTable);
 
     fetchXML();
   </script>
