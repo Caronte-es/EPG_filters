@@ -21,7 +21,7 @@
       text-align: center;
     }
 
-    input[type="text"], input[type="date"], input[type="time"] {
+    input[type="text"], input[type="date"], input[type="time"], select {
       padding: 5px;
       margin: 5px;
     }
@@ -86,6 +86,15 @@
     <input type="text" id="descriptionFilter" placeholder="Filtrar por Descripción">
     <input type="date" id="dateFilter" placeholder="Filtrar por Fecha">
     <input type="time" id="startHourFilter" placeholder="Filtrar por Hora de Inicio">
+    <select id="timeRangeFilter">
+      <option value="none">None</option>
+      <option value="30">30</option>
+      <option value="60">60</option>
+      <option value="90">90</option>
+      <option value="120">120</option>
+      <option value="150">150</option>
+      <option value="180">180</option>
+    </select>
     <br><br><button onclick="fetchXML()">Recargar EPG dobleM</button><br>
     <br><label for="myfile">Usar otro xml:</label>
     <input accept=".xml" type="file" id="fileInput">
@@ -161,13 +170,11 @@
       const year = time.substring(0, 4);
       const month = time.substring(4, 6);
       const day = time.substring(6, 8);
-      const hour = time.substring(8, 10);
-      const minute = time.substring(10, 12);
 
       return `${day}/${month}/${year}`;
     }
     
-    // Correct XMLTV time formatting into 'dd/mm/yyyy hh:mm'
+    // Correct XMLTV time formatting into 'hh:mm'
     function formatXMLTVTime(time) {
       if (!time) return '';
       const hour = time.substring(8, 10);
@@ -183,17 +190,22 @@
         description: document.getElementById('descriptionFilter').value.toLowerCase(),
         date: document.getElementById('dateFilter').value,
         startHour: document.getElementById('startHourFilter').value,
+        timeRange: document.getElementById('timeRangeFilter').value,
       };
 
       const filteredData = epgData.filter(item => {
         const itemDate = item.date.split('/').reverse().join('-'); // Convert to 'yyyy-mm-dd' format for comparison
         const itemStart = item.start;
+        const itemStartMinutes = convertToMinutes(itemStart);
+        const startHourMinutes = filters.startHour ? convertToMinutes(filters.startHour) : null;
+        const endHourMinutes = startHourMinutes && filters.timeRange !== 'none' ? startHourMinutes + parseInt(filters.timeRange) : null;
 
         return (!filters.channel || item.channel.toLowerCase().includes(filters.channel)) &&
                (!filters.title || item.title.toLowerCase().includes(filters.title)) &&
                (!filters.description || item.description.toLowerCase().includes(filters.description)) &&
                (!filters.date || itemDate >= filters.date) &&
-               (!filters.startHour || (itemDate === filters.date && itemStart >= filters.startHour));
+               (!filters.startHour || (itemDate === filters.date && itemStartMinutes >= startHourMinutes)) &&
+               (!startHourMinutes || !endHourMinutes || (itemDate === filters.date && itemStartMinutes >= startHourMinutes && itemStartMinutes <= endHourMinutes));
       });
 
       const startIndex = currentPage * 100;
@@ -222,6 +234,11 @@
       document.querySelector('.pagination-btn:nth-child(2)').disabled = startIndex + 100 >= filteredData.length;
     }
 
+    function convertToMinutes(time) {
+      const [hours, minutes] = time.split(':').map(Number);
+      return hours * 60 + minutes;
+    }
+
     function prevPage() {
       if (currentPage > 0) {
         currentPage--;
@@ -242,6 +259,7 @@
     document.getElementById('descriptionFilter').addEventListener('input', renderTable);
     document.getElementById('dateFilter').addEventListener('input', renderTable);
     document.getElementById('startHourFilter').addEventListener('input', renderTable);
+    document.getElementById('timeRangeFilter').addEventListener('input', renderTable);
 
     fetchXML();
   </script>
