@@ -1,1 +1,2 @@
-[//]: # (original: https://davidmuma.github.io/EPG/)
+[//]: # (fork del original: https://davidmuma.github.io/EPG/)
+Este código extiende el original de https://github.com/davidmuma/EPG que carga los datos de EPG de https://github.com/davidmuma/EPG_dobleM para añadir al Visor Web de la EPG la posibilidad de filtrado combinado por fecha y hora, de forma que puedas ver en la tabla los programas de los canales para una fecha concreta y a partir de una hora
