@@ -183,6 +183,66 @@
       return `${hour}:${minute}`;
     }
 
+function renderTable() {
+  const filters = {
+    channel: document.getElementById('channelFilter').value.toLowerCase(),
+    title: document.getElementById('titleFilter').value.toLowerCase(),
+    description: document.getElementById('descriptionFilter').value.toLowerCase(),
+    date: document.getElementById('dateFilter').value,
+    startHour: document.getElementById('startHourFilter').value,
+    timeRange: document.getElementById('timeRangeFilter').value,
+  };
+
+  const filteredData = epgData.filter(item => {
+    const itemDate = item.date.split('/').reverse().join('-'); // Convert to 'yyyy-mm-dd' format for comparison
+    const itemStart = item.start;
+    const itemStop = item.stop;
+    const itemStartMinutes = convertToMinutes(itemStart);
+    const itemStopMinutes = convertToMinutes(itemStop);
+    const startHourMinutes = filters.startHour ? convertToMinutes(filters.startHour) : null;
+    const endHourMinutes = startHourMinutes && filters.timeRange !== 'none' ? startHourMinutes + parseInt(filters.timeRange) : null;
+
+    return (!filters.channel || item.channel.toLowerCase().includes(filters.channel)) &&
+           (!filters.title || item.title.toLowerCase().includes(filters.title)) &&
+           (!filters.description || item.description.toLowerCase().includes(filters.description)) &&
+           (!filters.date || itemDate >= filters.date) &&
+           (!filters.startHour || 
+              (itemDate === filters.date && itemStartMinutes >= startHourMinutes) ||
+              (itemDate === filters.date && itemStopMinutes >= startHourMinutes && itemStartMinutes <= startHourMinutes) ||
+              (itemDate === filters.date && itemStopMinutes >= startHourMinutes)) &&
+           (!startHourMinutes || !endHourMinutes || 
+              (itemDate === filters.date && itemStartMinutes >= startHourMinutes && itemStartMinutes <= endHourMinutes));
+  });
+
+  const startIndex = currentPage * 100;
+  const paginatedData = filteredData.slice(startIndex, startIndex + 100);
+
+  const tableBody = document.querySelector('#data-table tbody');
+  tableBody.innerHTML = '';
+
+  paginatedData.forEach(item => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${item.channel}</td>
+      <td>${item.date}<br>${item.start}~${item.stop}</td>
+      <td>${item.iconSrc ? `<img src="${item.iconSrc}" height="100">` : ''}</td>
+      <td> 
+        <span style="float:left" class="title">${item.title}</span>
+        ${item.iconSrc2 ? `<img src="${item.iconSrc2}" width="80" align="right">` : ''}
+        <br>
+        <span style="float:left" class="description">${item.description}</span>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+
+  document.querySelector('.pagination-btn:nth-child(1)').disabled = currentPage === 0;
+  document.querySelector('.pagination-btn:nth-child(2)').disabled = startIndex + 100 >= filteredData.length;
+}
+
+
+
+/* OLD RENDERTABLE    
     function renderTable() {
       const filters = {
         channel: document.getElementById('channelFilter').value.toLowerCase(),
@@ -233,7 +293,7 @@
       document.querySelector('.pagination-btn:nth-child(1)').disabled = currentPage === 0;
       document.querySelector('.pagination-btn:nth-child(2)').disabled = startIndex + 100 >= filteredData.length;
     }
-
+*/
     function convertToMinutes(time) {
       const [hours, minutes] = time.split(':').map(Number);
       return hours * 60 + minutes;
