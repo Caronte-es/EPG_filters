@@ -80,25 +80,28 @@
 <body>
   <h1>EPG dobleM</h1>
 
-  <div id="controls">
+ <div id="controls">
     <input type="text" id="channelFilter" placeholder="Filtrar por Canal">
     <input type="text" id="titleFilter" placeholder="Filtrar por Título">
     <input type="text" id="descriptionFilter" placeholder="Filtrar por Descripción">
     <input type="date" id="dateFilter" placeholder="Filtrar por Fecha">
     <input type="time" id="startHourFilter" placeholder="Filtrar por Hora de Inicio">
     <select id="timeRangeFilter">
-      <option value="none">None</option>
-      <option value="30">30</option>
-      <option value="60">60</option>
-      <option value="90">90</option>
-      <option value="120">120</option>
-      <option value="150">150</option>
-      <option value="180">180</option>
+        <option value="none">None</option>
+        <option value="30">30</option>
+        <option value="60">60</option>
+        <option value="90">90</option>
+        <option value="120">120</option>
+        <option value="150">150</option>
+        <option value="180">180</option>
     </select>
-    <br><br><button onclick="fetchXML()">Recargar EPG dobleM</button><br>
-    <br><label for="myfile">Usar otro xml:</label>
+    <br><br>
+    <button onclick="fetchXML()">Recargar EPG dobleM</button>
+    <button onclick="resetFilters()">Reset</button>
+    <br>
+    <label for="myfile">Usar otro xml:</label>
     <input accept=".xml" type="file" id="fileInput">
-  </div>
+</div>
 
   <table id="data-table">
     <thead>
@@ -315,14 +318,25 @@ function renderTable() {
       }
     }
 
-    document.getElementById('channelFilter').addEventListener('input', renderTable);
-    document.getElementById('titleFilter').addEventListener('input', renderTable);
-    document.getElementById('descriptionFilter').addEventListener('input', renderTable);
-    document.getElementById('dateFilter').addEventListener('input', renderTable);
-    document.getElementById('startHourFilter').addEventListener('input', renderTable);
-    document.getElementById('timeRangeFilter').addEventListener('input', renderTable);
-
+    function resetFilters() {
+    document.getElementById('channelFilter').value = '';
+    document.getElementById('titleFilter').value = '';
+    document.getElementById('descriptionFilter').value = '';
+    document.getElementById('dateFilter').value = '';
+    document.getElementById('startHourFilter').value = '';
+    document.getElementById('timeRangeFilter').value = 'none';
     fetchXML();
+}
+
+document.getElementById('channelFilter').addEventListener('input', renderTable);
+document.getElementById('titleFilter').addEventListener('input', renderTable);
+document.getElementById('descriptionFilter').addEventListener('input', renderTable);
+document.getElementById('dateFilter').addEventListener('input', renderTable);
+document.getElementById('startHourFilter').addEventListener('input', renderTable);
+document.getElementById('timeRangeFilter').addEventListener('input', renderTable);
+
+fetchXML();
+
   </script>
 </body>
 </html>
