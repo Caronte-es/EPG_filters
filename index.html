@@ -209,9 +209,10 @@ function renderTable() {
            (!filters.startHour || 
               (itemDate === filters.date && itemStartMinutes >= startHourMinutes) ||
               (itemDate === filters.date && itemStopMinutes >= startHourMinutes && itemStartMinutes <= startHourMinutes) ||
-              (itemDate === filters.date && itemStopMinutes >= startHourMinutes)) &&
+              (itemDate === filters.date && itemStartMinutes <= startHourMinutes && itemStopMinutes >= startHourMinutes)) &&
            (!startHourMinutes || !endHourMinutes || 
-              (itemDate === filters.date && itemStartMinutes >= startHourMinutes && itemStartMinutes <= endHourMinutes));
+              (itemDate === filters.date && itemStartMinutes >= startHourMinutes && itemStartMinutes <= endHourMinutes) ||
+              (itemDate === filters.date && itemStartMinutes <= startHourMinutes && itemStopMinutes >= startHourMinutes));
   });
 
   const startIndex = currentPage * 100;
